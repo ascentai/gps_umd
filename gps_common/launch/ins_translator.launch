@@ -1,16 +1,21 @@
 <launch>
   
-   <param name="robot_description" textfile="$(find gps_common)/car_003.urdf" />
+   <arg name="urdf_file" default="robot.urdf" />
+   <param name="robot_description" textfile="$(arg urdf_file)" />
    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
 
+   <arg name="frame_id" default="odom" />
+   <arg name="child_frame_id" default="base_link" />
+   <arg name="use_ins" default="true" /> 
+   <arg name="publish_odom_tf" default="true" />
+   <arg name="world_odom_tf" default="false" /> 
+
    <node name="utm_odometry_node" pkg="gps_common" type="utm_odometry_node">
-   
-   <param name="frame_id" value="odom"/> 
-   <param name="child_frame_id" value="base_link"/>
-   <param name="use_ins" value="true"/>
-   <param name="publish_odom_tf" value="true"/>
-   <param name="world_odom_tf" value="false"/>
-   
+   <param name="frame_id" value="$(arg frame_id)"/> 
+   <param name="child_frame_id" value="$(arg child_frame_id)"/>
+   <param name="use_ins" value="$(arg use_ins)"/>
+   <param name="publish_odom_tf" value="$(arg publish_odom_tf)"/>
+   <param name="world_odom_tf" value="$(arg world_odom_tf)"/>
    </node>
 
 </launch>
