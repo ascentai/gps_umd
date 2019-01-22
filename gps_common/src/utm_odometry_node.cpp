@@ -21,10 +21,10 @@ using namespace gps_common;
 
 ros::Publisher odom_pub, world_odom_pub;
 ros::Subscriber gps_source_sub;
-std::string frame_id, child_frame_id;
+std::string frame_id, child_frame_id, world_frame_id, world_child_frame_id;
 double rot_cov, y_offset, x_offset, z_offset;
 double roll_offset, pitch_offset, yaw_offset;
-bool odom_init, publish_odom_tf, world_odom_tf;
+bool odom_init, publish_odom_tf, broadcast_world_tf;
 
 
 void callback(const sensor_msgs::NavSatFixConstPtr& fix) {
@@ -92,7 +92,8 @@ void insCallBack(const novatel_gps_msgs::InspvaConstPtr& ins) {
   double northing, easting;
   std::string zone;
   static tf::TransformBroadcaster odom_tf_broadcaster;
-  static geometry_msgs::TransformStamped odom_tf;
+
+  static geometry_msgs::TransformStamped odom_tf, world_tf;
   static geometry_msgs::PoseStamped imu_pose;
 
   tf::TransformListener tfListener;
@@ -171,13 +172,6 @@ void insCallBack(const novatel_gps_msgs::InspvaConstPtr& ins) {
         odom_tf.transform.translation.y = odom.pose.pose.position.y;
         odom_tf.transform.translation.z = odom.pose.pose.position.z;
 
-        if(world_odom_tf)
-        {
-        	odom_tf.transform.translation.x = odom_world.pose.pose.position.x;
-        	odom_tf.transform.translation.y = odom_world.pose.pose.position.y;
-        	odom_tf.transform.translation.z = odom_world.pose.pose.position.z;
-        }
-
         odom_tf.transform.rotation.x = quat_imu[0];
         odom_tf.transform.rotation.y = quat_imu[1];
         odom_tf.transform.rotation.z = quat_imu[2];
@@ -185,6 +179,27 @@ void insCallBack(const novatel_gps_msgs::InspvaConstPtr& ins) {
 
     	odom_tf_broadcaster.sendTransform(odom_tf);
     }
+    if(broadcast_world_tf)
+    {
+    	world_tf.header.stamp = odom.header.stamp; //static tf from initial world position.
+    	world_tf.header.frame_id = world_frame_id;
+    	world_tf.child_frame_id = world_child_frame_id;
+
+    	world_tf.transform.translation.x = x_offset;
+    	world_tf.transform.translation.y = y_offset;
+    	world_tf.transform.translation.z = 0;
+
+    	tf::Quaternion quat_world;
+    	quat_world.setRPY(roll_offset, pitch_offset, yaw_offset);
+
+    	world_tf.transform.rotation.x = quat_world[0];
+    	world_tf.transform.rotation.y = quat_world[1];
+    	world_tf.transform.rotation.z = quat_world[2];
+    	world_tf.transform.rotation.w = quat_world[3];
+
+    	odom_tf_broadcaster.sendTransform(world_tf);
+    }
+
   }
 }
 
@@ -196,10 +211,14 @@ int main (int argc, char **argv) {
   bool use_ins = true;
   odom_init = false; //initialization flag for odom.
   publish_odom_tf = false;
-  world_odom_tf = false;
+  broadcast_world_tf = false;
   priv_node.param<std::string>("frame_id", frame_id, "");
   priv_node.param<std::string>("child_frame_id", child_frame_id, "");
   priv_node.param<double>("rot_covariance", rot_cov, 99999.0);
+
+  priv_node.param<std::string>("world_frame_id", world_frame_id, "");
+  priv_node.param<std::string>("world_child_frame_id", world_child_frame_id, "");
+
 
   if(!priv_node.getParam("use_ins", use_ins))
 	  ROS_WARN_STREAM("No use_ins param provided, using default: "<<use_ins);
@@ -207,8 +226,8 @@ int main (int argc, char **argv) {
   if(!priv_node.getParam("publish_odom_tf", publish_odom_tf))
 	  ROS_WARN_STREAM("No publish_odom_tf param provided, using default: "<<publish_odom_tf);
 
-  if(!priv_node.getParam("world_odom_tf",world_odom_tf))
-	  ROS_WARN_STREAM("No publish_odom_tf param provided, using default: "<<world_odom_tf);
+  if(!priv_node.getParam("broadcast_world_tf",broadcast_world_tf))
+	  ROS_WARN_STREAM("No world_tf param provided, using default: "<<broadcast_world_tf);
 
 
   if(use_ins)
