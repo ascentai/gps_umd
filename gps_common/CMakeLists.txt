@@ -20,6 +20,22 @@ set(DEPS
 find_package(catkin REQUIRED COMPONENTS
              ${DEPS})
 
+#######################################
+## Declare ROS messages and services ##
+#######################################
+
+add_message_files(
+  FILES
+    GPSStatus.msg
+    GPSFix.msg
+)
+
+generate_messages(DEPENDENCIES
+  nav_msgs
+  sensor_msgs
+  std_msgs
+)
+
 ###################################################
 ## Declare things to be passed to other projects ##
 ###################################################
