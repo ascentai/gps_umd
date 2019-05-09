@@ -34,8 +34,10 @@ void insCallBack(const novatel_gps_msgs::InspvaConstPtr& ins) {
   double northing, easting, z;
   std::string zone;
   LLtoUTM(ins->latitude, ins->longitude, northing, easting, zone);
-  if (ignore_z) z = 0.0;
-  else z = ins->height;
+  if (ignore_z)
+    z = 0.0;
+  else
+    z = ins->height;
 
   Eigen::Vector3d position(easting, northing, z);
   Eigen::Matrix3d rot_mat = world_to_local_frame.second.toRotationMatrix();
@@ -119,19 +121,21 @@ int main (int argc, char **argv) {
   priv_node.param<bool>("publish_odom_tf", publish_odom_tf, false);
   priv_node.param<bool>("ignore_z", ignore_z, false);
 
-  // more than parameters, a service call would be better
+  // TODO more than parameters, a service call would be better
   // so that we could change the origin at runtime
   geometry_msgs::PoseStamped origin;
   priv_node.param<bool>("use_fixed_origin", use_fixed_origin, false);
   priv_node.param<double>("origin_x", origin.pose.position.x, 0);
   priv_node.param<double>("origin_y", origin.pose.position.y, 0);
   priv_node.param<double>("origin_z", origin.pose.position.z, 0);
-  // using euler angles might be easier
+  // TODO using euler angles might be easier
   priv_node.param<double>("origin_ox", origin.pose.orientation.x, 0);
   priv_node.param<double>("origin_oy", origin.pose.orientation.y, 0);
   priv_node.param<double>("origin_oz", origin.pose.orientation.z, 0);
   priv_node.param<double>("origin_ow", origin.pose.orientation.w, 1);
 
+  // if use_fixed_origin is false, wait for a /inspva message
+  // and use it as the origin
   if (!use_fixed_origin) {
     auto ins = ros::topic::waitForMessage<novatel_gps_msgs::Inspva>("/inspva", node);
     double northing, easting;
