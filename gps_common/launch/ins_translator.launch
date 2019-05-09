@@ -1,17 +1,16 @@
 <launch>
-  
+
+   <arg name="frame_id" default="odom" />
+   <arg name="child_frame_id" default="base_link" />
+   <arg name="publish_odom_tf" default="true" />
+   <arg name="world_frame_id" default="world" />
+
    <node name="utm_odometry_node" pkg="gps_common" type="utm_odometry_node">
-   
-   <param name="frame_id" value="odom"/> 
-   <param name="child_frame_id" value="base_link"/>
-   <param name="use_ins" value="true"/>
-   <param name="publish_odom_tf" value="true"/>
-   <param name="broadcast_world_tf" value="true"/>
-
-   <param name="world_frame_id" value="world" /> 
-   <param name="world_child_frame_id" value="map"/>
-
-   
+       <param name="frame_id" value="$(arg frame_id)"/>
+       <param name="child_frame_id" value="$(arg child_frame_id)"/>
+       <param name="publish_odom_tf" value="$(arg publish_odom_tf)"/>
+       <param name="world_frame_id" value="$(arg world_frame_id)"/>
+       <param name="use_fixed_origin" value="false"/>
    </node>
 
 </launch>

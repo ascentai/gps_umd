@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(gps_common CXX)
 
+find_package(Eigen3 REQUIRED)
+
 ############
 ## Catkin ##
 ############
@@ -48,7 +50,7 @@ catkin_package(INCLUDE_DIRS include
 ## Build ##
 ###########
 add_compile_options(-std=c++11)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include ${catkin_INCLUDE_DIRS})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include ${catkin_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIR})
 add_executable(${PROJECT_NAME}/utm_odometry_node src/utm_odometry_node.cpp)
 set_target_properties(${PROJECT_NAME}/utm_odometry_node PROPERTIES OUTPUT_NAME "utm_odometry_node")
 target_link_libraries(${PROJECT_NAME}/utm_odometry_node ${catkin_LIBRARIES})
