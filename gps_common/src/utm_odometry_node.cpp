@@ -117,9 +117,10 @@ class UTMOdometryNode {
       if (ignore_z) 
         local_position = Eigen::Vector3d(local_position(0), local_position(1), 0.0);
 
-      Eigen::Quaterniond orientation = Eigen::AngleAxisd(ins->roll * DEG2RAD, Eigen::Vector3d::UnitX()) *
+      Eigen::Quaterniond orientation =
+        Eigen::AngleAxisd((90.0 - ins->azimuth) * DEG2RAD, Eigen::Vector3d::UnitZ()) *
         Eigen::AngleAxisd(ins->pitch * DEG2RAD, Eigen::Vector3d::UnitY()) *
-        Eigen::AngleAxisd((90.0 - ins->azimuth) * DEG2RAD, Eigen::Vector3d::UnitZ());
+        Eigen::AngleAxisd(ins->roll * DEG2RAD, Eigen::Vector3d::UnitX());
       Eigen::Quaterniond local_orientation = world_to_local_frame.second * orientation;
 
       odom.header.stamp = ins->header.stamp;
@@ -177,6 +178,7 @@ class UTMOdometryNode {
       odom_tf.header = odom.header;
       odom_tf.child_frame_id = odom.child_frame_id;
       odom_world.header.frame_id = world_frame_id;
+      odom_world.child_frame_id = odom.child_frame_id;
 
       InitOrigin();
 
